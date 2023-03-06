@@ -1,43 +1,24 @@
 {
+  "name": "TechNeck",
+  "displayName": "TechNeck",
   "expo": {
     "name": "TechNeck",
-    "slug": "TechNeck",
+    "slug": "techneck",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0
+    "icon": "./assets/1024.png",
+    "android": {
+      "package": "com.aniruth.TechNeck",
+      "versionCode": 1
     },
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+    "extra": {
+      "eas": {
+        "projectId": "1c5a4d20-cc8d-46d1-a144-c232f980ebe1"
       }
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
-          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
-          "isAccessMediaLocationEnabled": true
-        }
-      ]
-    ]
+    "owner": "aniruth_raman"
   }
 }
