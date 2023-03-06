@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Platform } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Platform, ToastAndroid, Alert } from 'react-native';
 
 import { Camera } from 'expo-camera';
 
@@ -53,6 +53,7 @@ export default function App() {
   const [model, setModel] = useState<posedetection.PoseDetector>();
   const [poses, setPoses] = useState<posedetection.Pose[]>();
   const [fps, setFps] = useState(0);
+  const [aligned, setAligned] = useState(false);
   const [orientation, setOrientation] =
     useState<ScreenOrientation.Orientation>();
   const [cameraType, setCameraType] = useState<CameraType>(
@@ -133,13 +134,13 @@ export default function App() {
       const imageTensor = images.next().value as tf.Tensor3D;
       if (model && tfReady && imageTensor != null) {
         const startTime = performance.now();
-        const poses = await model.estimatePoses(imageTensor, 
-        undefined,
-        Date.now()
+        const poses = await model.estimatePoses(imageTensor,
+          undefined,
+          Date.now()
           //   {
-        //   flipHorizontal: Platform.OS === 'ios' ? false : true,
-        //   // decodingMethod: 'single-person',
-        // }
+          //   flipHorizontal: Platform.OS === 'ios' ? false : true,
+          //   // decodingMethod: 'single-person',
+          // }
         );
         setPoses(poses);
 
@@ -151,14 +152,46 @@ export default function App() {
         if (poses && poses.length > 0) {
           const pose = poses[0];
           const keypoints = pose.keypoints;
-
           const leftShoulder = keypoints.find((kp) => kp.name === 'left_shoulder');
           const rightShoulder = keypoints.find((kp) => kp.name === 'right_shoulder');
+          if (leftShoulder && rightShoulder) {
+            if (findDistance(leftShoulder.x, leftShoulder.y, rightShoulder.x, rightShoulder.y) < 100) {
+              // notifyMessage("Shoulders not aligned");
+              setAligned(true);
+            } else {
+              // notifyMessage("Shoulders not aligned");
+              setAligned(false);
+            }
+          }
           const leftEar = keypoints.find((kp) => kp.name === 'left_ear');
           const rightEar = keypoints.find((kp) => kp.name === 'right_ear');
+          const leftHip = keypoints.find((kp) => kp.name === 'left_hip');
+          const rightHip = keypoints.find((kp) => kp.name === 'right_hip');
 
-          if (leftShoulder && rightShoulder && leftEar && rightEar) {
-            const angle = findAngle(
+
+          // const leftEye = keypoints.find((kp) => kp.name === 'left_eye');
+          // const rightEye = keypoints.find((kp) => kp.name === 'right_eye');
+          const nose = keypoints.find((kp) => kp.name === 'nose');
+
+          if (cameraType === CameraType.front && leftEar && rightEar && nose) {
+            const earsMidpoint = {
+              x: (leftEar.x + rightEar.x) / 2,
+              y: (leftEar.y + rightEar.y) / 2,
+            };
+
+            const dist = findDistance(earsMidpoint.x, earsMidpoint.y, nose.x, nose.y);
+            // console.log("Distance:"+dist);
+            if (dist < 10) {
+              setColor('green');
+              setAligned(true);
+            } else {
+              setColor('red');
+              setAligned(false);
+            }
+          }
+
+          if (cameraType === CameraType.back && leftShoulder && rightShoulder && leftEar && rightEar && leftHip && rightHip) {
+            const neckAngle = findAngle(
               leftShoulder.x,
               leftShoulder.y,
               // rightShoulder.x,
@@ -168,26 +201,21 @@ export default function App() {
               // rightEar.x,
               // rightEar.y
             );
+            const torsoAngle = findAngle(leftHip.x, leftHip.y, leftShoulder.x, leftShoulder.y);
             // console.log("Angle:"+angle)
-            if (angle < 30) {
-              // Set the SVG color to red.
-              setColor('red');
-            } else {
+            // console.log("Neck Angle:" + neckAngle + ",Torso Angle:" + torsoAngle);
+            if (neckAngle < 40 && torsoAngle < 10) {
               // Set the SVG color to green.
               setColor('green');
+              setAligned(true);
+            } else {
+              // Set the SVG color to red.
+              setColor('red');
+              setAligned(false);
             }
           }
         }
       }
-      // const startTs = Date.now();
-      // const poses = await model!.estimatePoses(
-      //   imageTensor,
-      //   undefined,
-      //   Date.now()
-      // );
-      // const latency = Date.now() - startTs;
-      // setFps(Math.floor(1000 / latency));
-      // setPoses(poses);
       tf.dispose([imageTensor]);
 
       if (rafId.current === 0) {
@@ -245,6 +273,13 @@ export default function App() {
     return (
       <View style={styles.fpsContainer}>
         <Text>FPS: {fps}</Text>
+      </View>
+    );
+  };
+  const renderAligned = () => {
+    return (
+      <View style={styles.textContainer}>
+        <Text>{aligned ? "" : "Not "}Aligned</Text>
       </View>
     );
   };
@@ -346,6 +381,7 @@ export default function App() {
           onReady={handleCameraStream} useCustomShadersToResize={false} cameraTextureWidth={0} cameraTextureHeight={0} />
         {renderPose()}
         {renderFps()}
+        {renderAligned()}
         {renderCameraTypeSwitcher()}
       </View>
     );
@@ -405,6 +441,16 @@ const styles = StyleSheet.create({
     padding: 8,
     zIndex: 20,
   },
+  textContainer: {
+    position: 'absolute',
+    bottom: 10,
+    width: 180,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, .7)',
+    borderRadius: 2,
+    padding: 8,
+    zIndex: 20,
+  },
 });
 // function findAngle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
 //   const vector1 = { x: x2 - x1, y: y2 - y1 };
@@ -421,8 +467,20 @@ function findAngle(x1: number, y1: number, x2: number, y2: number) {
   // const dotProduct = vector1.x * vector2.x + vector1.y * vector2.y;
   // const magnitude1 = Math.sqrt(vector1.x ** 2 + vector1.y ** 2);
   // const magnitude2 = Math.sqrt(vector2.x ** 2 + vector2.y ** 2);
-  const angle = Math.acos((y2-y1)*(-y1) / (Math.sqrt((x2-x1)**2+(y2-y1)**2)*y1));
+  const angle = Math.acos((y2 - y1) * (-y1) / (Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) * y1));
   return Math.floor(angle * (180 / Math.PI));
 }
 
+function findDistance(x1: number, y1: number, x2: number, y2: number) {
+  const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+  return Math.floor(dist);
+}
+
+function notifyMessage(msg: string) {
+  if (Platform.OS === 'android') {
+    ToastAndroid.show(msg, ToastAndroid.SHORT)
+  } else {
+    Alert.alert(msg);
+  }
+}
 
