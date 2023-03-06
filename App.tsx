@@ -443,13 +443,17 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     position: 'absolute',
-    bottom: 10,
-    width: 180,
-    alignItems: 'center',
+    bottom: 0,
+    width: '100%',
+    // alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, .7)',
     borderRadius: 2,
     padding: 8,
-    zIndex: 20,
+    // zIndex: 20,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: (Platform.OS === 'ios') ? 20 : 0
   },
 });
 // function findAngle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
