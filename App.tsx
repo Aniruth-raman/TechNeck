@@ -45,7 +45,7 @@ const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 const AUTO_RENDER = false;
 
 // Whether to load model from app bundle (true) or through network (false).
-const LOAD_MODEL_FROM_BUNDLE = false;
+const LOAD_MODEL_FROM_BUNDLE = true;
 
 export default function App() {
   const cameraRef = useRef(null);
