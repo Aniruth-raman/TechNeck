@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Platform, ToastAndroid, Alert } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Platform } from 'react-native';
 
 import { Camera } from 'expo-camera';
 
@@ -7,7 +7,6 @@ import * as tf from '@tensorflow/tfjs';
 import * as posedetection from '@tensorflow-models/pose-detection';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import {
-  bundleResourceIO,
   cameraWithTensors,
 } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle } from 'react-native-svg';
@@ -45,7 +44,6 @@ const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 const AUTO_RENDER = false;
 
 // Whether to load model from app bundle (true) or through network (false).
-const LOAD_MODEL_FROM_BUNDLE = true;
 
 export default function App() {
   const cameraRef = useRef(null);
@@ -88,23 +86,8 @@ export default function App() {
 
       // Load movenet model.
       // https://github.com/tensorflow/tfjs-models/tree/master/pose-detection
-      const movenetModelConfig: posedetection.MoveNetModelConfig = {
-        modelType: posedetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
-        enableSmoothing: true,
-      };
-      if (LOAD_MODEL_FROM_BUNDLE) {
-        const modelJson = require('./offline_model/model.json');
-        const modelWeights1 = require('./offline_model/group1-shard1of2.bin');
-        const modelWeights2 = require('./offline_model/group1-shard2of2.bin');
-        movenetModelConfig.modelUrl = bundleResourceIO(modelJson, [
-          modelWeights1,
-          modelWeights2,
-        ]);
-      }
-      const model = await posedetection.createDetector(
-        posedetection.SupportedModels.MoveNet,
-        movenetModelConfig
-      );
+      
+      const model = await posedetection.createDetector(posedetection.SupportedModels.PoseNet);
       setModel(model);
 
       // Ready!
@@ -480,11 +463,4 @@ function findDistance(x1: number, y1: number, x2: number, y2: number) {
   return Math.floor(dist);
 }
 
-function notifyMessage(msg: string) {
-  if (Platform.OS === 'android') {
-    ToastAndroid.show(msg, ToastAndroid.SHORT)
-  } else {
-    Alert.alert(msg);
-  }
-}
 
