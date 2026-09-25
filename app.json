@@ -1,24 +1,48 @@
 {
-  "name": "TechNeck",
-  "displayName": "TechNeck",
   "expo": {
     "name": "TechNeck",
-    "slug": "techneck",
+    "slug": "TechNeck",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/1024.png",
-    "android": {
-      "package": "com.aniruth.TechNeck",
-      "versionCode": 1
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "TechNeck needs camera access to measure your neck angle."
+      }
     },
-    "assetBundlePatterns": [
-      "**/*"
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "package": "com.aniruth.TechNeck"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-build-properties",
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "TechNeck needs camera access to measure your neck angle.",
+          "enableFrameProcessors": true
+        }
+      ],
+      "expo-status-bar"
     ],
     "extra": {
       "eas": {
-        "projectId": "1c5a4d20-cc8d-46d1-a144-c232f980ebe1"
+        "projectId": "3b2ad51c-49df-4027-82e9-7fb835d06273"
       }
-    },
-    "owner": "aniruth_raman"
+    }
   }
 }
