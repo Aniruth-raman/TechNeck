@@ -1,0 +1,27 @@
+{
+  "name": "deepmerge",
+  "version": "4.3.2",
+  "description": "Local patched copy of deepmerge 4.3.1 fixing CVE-2026-93753. Upstream has no patched release; remove the override in the root package.json once it does.",
+  "keywords": [
+    "merge",
+    "deep",
+    "extend",
+    "copy",
+    "clone",
+    "recursive"
+  ],
+  "homepage": "https://github.com/TehShrike/deepmerge",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/TehShrike/deepmerge.git"
+  },
+  "main": "index.js",
+  "types": "index.d.ts",
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "dependencies": {
+    "is-mergeable-object": "^1.1.0"
+  }
+}

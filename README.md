@@ -27,4 +27,6 @@ npx expo-doctor   # dependency checks
 
 ## Security
 
-`npm audit` reports one low-severity advisory left: `deepmerge` (prototype pollution) pulled in by `@expo/cli` at build time. There is no patched release of `deepmerge` yet and it only sees trusted local config, so it is documented rather than force-downgraded. Recheck when Expo updates its CLI. All other advisories (shell-quote, brace-expansion, node-forge, js-yaml, source-map-js, compression, zod) are pinned to patched versions in `overrides`.
+`npm audit` is clean. Build-time advisories (shell-quote, brace-expansion, node-forge, js-yaml, source-map-js, compression, zod) are pinned to patched versions through `overrides`.
+
+`deepmerge` has no upstream fix for CVE-2026-93753 / GHSA-gcqx-w48m-w2h4, so `vendor/deepmerge` is a patched copy of 4.3.1 (key denylist, `Object.defineProperty` writes, fail-closed `in` check) installed as a `file:` dependency. It is only reached by `@expo/cli` when merging app config; nothing in the app bundle imports it. `npm run check` exercises the guard, and `vendor/deepmerge/README.md` says when to drop the local copy.
