@@ -28,6 +28,21 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#070B10",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#070B10"
+          }
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "3b2ad51c-49df-4027-82e9-7fb835d06273"
