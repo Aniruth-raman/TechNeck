@@ -5,18 +5,18 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#070B10",
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "TechNeck needs camera access to measure your neck angle."
+        "NSCameraUsageDescription": "TechNeck uses the front camera to measure how far your neck bends. Video never leaves your device."
       }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#070B10",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -28,17 +28,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-build-properties",
-      [
-        "react-native-vision-camera",
-        {
-          "cameraPermissionText": "TechNeck needs camera access to measure your neck angle.",
-          "enableFrameProcessors": true
-        }
-      ],
-      "expo-status-bar"
-    ],
     "extra": {
       "eas": {
         "projectId": "3b2ad51c-49df-4027-82e9-7fb835d06273"

@@ -1,51 +1,102 @@
-import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import {
-  Camera,
-  useCameraDevice,
-  useCameraPermission,
-  useFrameProcessor,
-} from 'react-native-vision-camera';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
+import { SettingsSheet } from './src/components/SettingsSheet';
+import { engine } from './src/lib/engine';
+import { loadPrefs, savePrefs, type Prefs } from './src/lib/settings';
+import { HomeScreen } from './src/screens/HomeScreen';
+import { MonitorScreen } from './src/screens/MonitorScreen';
+import { colors } from './src/theme';
+
+type Screen = 'home' | 'calibrate' | 'monitor';
 
 export default function App() {
-  const { hasPermission, requestPermission } = useCameraPermission();
-  const device = useCameraDevice('front');
+  const [prefs, setPrefs] = useState<Prefs | null>(null);
+  const [screen, setScreen] = useState<Screen>('home');
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
-    if (!hasPermission) requestPermission();
-  }, [hasPermission]);
-
-  const frameProcessor = useFrameProcessor((frame) => {
-    'worklet';
-    // intentionally empty for now — just confirming frame processors run
+    let mounted = true;
+    void loadPrefs().then((loaded) => {
+      if (mounted) setPrefs(loaded);
+    });
+    SystemUI.setBackgroundColorAsync(colors.bg).catch(() => {});
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  if (!hasPermission) {
-    return (
-      <View style={styles.center}>
-        <Text>Waiting for camera permission…</Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    if (prefs) engine.applyPrefs(prefs);
+  }, [prefs]);
 
-  if (!device) {
+  const updatePrefs = useCallback((patch: Partial<Prefs>) => {
+    setPrefs((current) => {
+      if (!current) return current;
+      const next = { ...current, ...patch };
+      void savePrefs(next);
+      return next;
+    });
+  }, []);
+
+  const handleCalibrated = useCallback(
+    (neutral: number) => {
+      updatePrefs({ neutral });
+      setScreen('monitor');
+    },
+    [updatePrefs],
+  );
+
+  const goHome = useCallback(() => setScreen('home'), []);
+  const start = useCallback(
+    () => setScreen(prefs?.neutral === null ? 'calibrate' : 'monitor'),
+    [prefs?.neutral],
+  );
+  const calibrate = useCallback(() => setScreen('calibrate'), []);
+
+  if (!prefs) {
     return (
-      <View style={styles.center}>
-        <Text>No camera device found.</Text>
+      <View style={styles.loading}>
+        <StatusBar style="light" />
+        <ActivityIndicator color={colors.mint} />
       </View>
     );
   }
 
   return (
-    <Camera
-      style={StyleSheet.absoluteFill}
-      device={device}
-      isActive={true}
-      frameProcessor={frameProcessor}
-    />
+    <SafeAreaProvider>
+      <StatusBar style="light" />
+      {screen === 'home' ? (
+        <HomeScreen
+          prefs={prefs}
+          onStart={start}
+          onCalibrate={calibrate}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
+      ) : (
+        <MonitorScreen
+          mode={screen === 'calibrate' ? 'calibrate' : 'monitor'}
+          onExit={goHome}
+          onCalibrated={handleCalibrated}
+        />
+      )}
+      <SettingsSheet
+        visible={settingsOpen}
+        prefs={prefs}
+        onChange={updatePrefs}
+        onClose={() => setSettingsOpen(false)}
+      />
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loading: {
+    flex: 1,
+    backgroundColor: colors.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
