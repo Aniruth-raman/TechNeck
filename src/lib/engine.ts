@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import * as Haptics from 'expo-haptics';
+import { schedulePostureAlert } from './notifications';
 import {
   bendFrom,
   CALIBRATION_MS,
@@ -49,7 +49,7 @@ class PostureEngine {
   private neutral: number | null = DEFAULT_PREFS.neutral;
   private threshold = DEFAULT_PREFS.threshold;
   private holdMs = DEFAULT_PREFS.holdMs;
-  private haptics = DEFAULT_PREFS.haptics;
+  private notifications = DEFAULT_PREFS.notifications;
 
   private face = false;
   private lastFaceAt = 0;
@@ -84,7 +84,7 @@ class PostureEngine {
   applyPrefs(prefs: Prefs) {
     this.threshold = prefs.threshold;
     this.holdMs = prefs.holdMs;
-    this.haptics = prefs.haptics;
+    this.notifications = prefs.notifications;
     this.neutral = prefs.neutral;
     this.publish(Date.now(), true);
   }
@@ -214,7 +214,6 @@ class PostureEngine {
     this.status = 'good';
     const done = this.onCalibrated;
     this.onCalibrated = null;
-    if (this.haptics) this.buzz(Haptics.NotificationFeedbackType.Success);
     this.publish(now, true);
     done?.(neutral);
   }
@@ -247,13 +246,13 @@ class PostureEngine {
       this.lastAlertAt = now;
       this.alerts += 1;
       this.alerting = true;
-      if (this.haptics) this.buzz(Haptics.NotificationFeedbackType.Warning);
+      if (this.notifications) this.notify();
     }
   }
 
-  private buzz(type: Haptics.NotificationFeedbackType) {
-    Haptics.notificationAsync(type).catch(() => {
-      // Haptics are a nicety; unsupported devices must not crash a session.
+  private notify() {
+    schedulePostureAlert().catch(() => {
+      // Notifications are optional; permission denials must not crash a session.
     });
   }
 

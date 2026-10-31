@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { SettingsSheet } from './src/components/SettingsSheet';
 import { engine } from './src/lib/engine';
+import { ensureNotificationPermissions } from './src/lib/notifications';
 import { loadPrefs, savePrefs, type Prefs } from './src/lib/settings';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { MonitorScreen } from './src/screens/MonitorScreen';
@@ -22,6 +23,7 @@ export default function App() {
     void loadPrefs().then((loaded) => {
       if (mounted) setPrefs(loaded);
     });
+    void ensureNotificationPermissions();
     SystemUI.setBackgroundColorAsync(colors.bg).catch(() => {});
     return () => {
       mounted = false;

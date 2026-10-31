@@ -80,14 +80,14 @@ export function SettingsSheet({ visible, prefs, onChange, onClose }: Props) {
 
           <View style={styles.toggleRow}>
             <View style={styles.toggleText}>
-              <Text style={styles.toggleTitle}>Haptic nudge</Text>
-              <Text style={styles.toggleHint}>A short buzz when you need to lift your head.</Text>
+              <Text style={styles.toggleTitle}>Notify me</Text>
+              <Text style={styles.toggleHint}>Sound and alert when your neck bends forward.</Text>
             </View>
             <Switch
-              value={prefs.haptics}
-              onValueChange={(haptics) => onChange({ haptics })}
+              value={prefs.notifications}
+              onValueChange={(notifications) => onChange({ notifications })}
               trackColor={{ false: colors.border, true: 'rgba(59,232,176,0.45)' }}
-              thumbColor={prefs.haptics ? colors.mint : colors.muted}
+              thumbColor={prefs.notifications ? colors.mint : colors.muted}
             />
           </View>
 

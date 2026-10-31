@@ -6,7 +6,8 @@ export type Prefs = {
   threshold: number;
   /** How long the bend must last before an alert fires. */
   holdMs: number;
-  haptics: boolean;
+  /** Play a sound/notification when posture is bad for too long. */
+  notifications: boolean;
   /** Pitch angle of a level head, measured once during calibration. */
   neutral: number | null;
 };
@@ -14,7 +15,7 @@ export type Prefs = {
 export const DEFAULT_PREFS: Prefs = {
   threshold: 20,
   holdMs: 6000,
-  haptics: true,
+  notifications: true,
   neutral: null,
 };
 
@@ -29,10 +30,16 @@ export function sanitizePrefs(raw: unknown): Prefs {
   const threshold = Number(value.threshold);
   const holdMs = Number(value.holdMs);
   const neutral = value.neutral === null || value.neutral === undefined ? null : Number(value.neutral);
+  const notifications =
+    typeof value.notifications === 'boolean'
+      ? value.notifications
+      : typeof (value as { haptics?: boolean }).haptics === 'boolean'
+        ? (value as { haptics: boolean }).haptics
+        : DEFAULT_PREFS.notifications;
   return {
     threshold: Number.isFinite(threshold) ? clamp(threshold, 10, 40) : DEFAULT_PREFS.threshold,
     holdMs: Number.isFinite(holdMs) ? clamp(holdMs, 2000, 30000) : DEFAULT_PREFS.holdMs,
-    haptics: typeof value.haptics === 'boolean' ? value.haptics : DEFAULT_PREFS.haptics,
+    notifications,
     neutral: neutral !== null && Number.isFinite(neutral) && Math.abs(neutral) <= 90 ? neutral : null,
   };
 }
